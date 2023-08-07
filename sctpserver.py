@@ -3,6 +3,7 @@ import socket
 def sctp_server(server_ip, server_port):
     sctp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_SCTP)
     sctp_socket.bind((server_ip, server_port))
+    #sctp_socket.settimeout(10)  # Set socket timeout to 1 second
     sctp_socket.listen(5)
 
     print(f"SCTP Server listening on {server_ip}:{server_port}")

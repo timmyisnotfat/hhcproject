@@ -16,7 +16,8 @@ def tcp_server(server_ip, server_port):
                 data = client_socket.recv(1024)
                 if not data:
                     break
-                print(f"Received data: {data.decode()}")
+                response_text = data.decode().strip()
+                print(f"Received data: {response_text}")
 
                 response = b"Server received: " + data
                 client_socket.send(response)

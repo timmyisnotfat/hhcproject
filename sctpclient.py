@@ -16,27 +16,29 @@ def send_sctp_packets(destination_ip, destination_port, interval_sec, num_packet
     except:
         print("Connection Failure")
         return
-    sctp_socket.settimeout(0.001)  # Set socket timeout to 1 second
+    sctp_socket.settimeout(0.05)  # Set socket timeout to 1 second
         
 
     for i in range(num_packets):
-        data = b"Packet " + str(i).encode()
+        data = b"Packet " + str(i).encode() + b" " * 1000
         start_time = time.time()
         total_data_sent += len(data)  # Count the data size
         sctp_socket.send(data)
         sent_packets += 1
 
         try:
-            response = sctp_socket.recv(1024)
+            response = sctp_socket.recv(10240)
             received_packets += 1
             end_time = time.time()
             rtt = end_time - start_time
             rtt_sum += rtt
-            print(f"Received response: {response.decode()}, RTT: {rtt:.6f}s")
+            response_text = response.decode().strip()   
+            #print(f"{response_text}")
+            print(f"Received response: {response_text}, RTT: {rtt:.6f}s")
+            #print(f"Received response: {response.decode()}, RTT: {rtt:.6f}s")
         except socket.timeout:
             lost_data += len(data) 
             print(f"No response received for packet {i}")
-
         time.sleep(interval_sec)
 
     sctp_socket.close()
@@ -45,18 +47,18 @@ def send_sctp_packets(destination_ip, destination_port, interval_sec, num_packet
     avg_rtt = rtt_sum / received_packets if received_packets > 0 else 0
     # Calculate throughput in bytes per second
     total_time = interval_sec * num_packets
-    throughput = (total_data_sent - lost_data) / (endTime - startTime)
+    throughput = (total_data_sent - lost_data) / (endTime - startTime) * 8
 
     print(f"Packet Loss Rate: {packet_loss_rate:.2%}")
     print(f"Average RTT: {avg_rtt:.6f}s")
-    print(f"Throughput: {throughput:.2f} bytes/sec")
+    print(f"Throughput: {throughput:.2f} bits/sec")
 
 # Example usage:
 destination_ip = "10.0.0.1"
 destination_port = 5201
-#interval_sec = 0.001  # 100 milliseconds interval between packets
-#num_packets = 1000
-interval_sec = float(input("input interval in second : ")) # 100 milliseconds interval between packets
-num_packets = int(input("input number of packets : "))
+interval_sec = 0.005  # 100 milliseconds interval between packets
+num_packets = 10000
+#interval_sec = float(input("input interval in second : ")) # 100 milliseconds interval between packets
+#num_packets = int(input("input number of packets : "))
 send_sctp_packets(destination_ip, destination_port, interval_sec, num_packets)
 
